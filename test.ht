@@ -1,0 +1,10 @@
+// This is a comment
+class MyClass {
+  var name = "Hello World";
+  func greet() {
+    return "Hello, " + this.name;
+  }
+}
+
+var obj = new MyClass();
+obj.greet();

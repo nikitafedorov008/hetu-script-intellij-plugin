@@ -1,0 +1,15 @@
+<idea-plugin>
+    <id>com.hetuscript.intellij</id>
+    <name>hetu-script</name>
+    <version>1.0.0</version>
+    <vendor>Nikita Fedorov</vendor>
+
+    <description>Support for Hetu Script language (.ht files)</description>
+
+    <depends>com.intellij.modules.platform</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <fileType name="HetuScript" implementationClass="com.hetu.hetuscript.SimpleHetuFileType"
+                  language="HetuScript" extensions="ht"/>
+    </extensions>
+</idea-plugin>
