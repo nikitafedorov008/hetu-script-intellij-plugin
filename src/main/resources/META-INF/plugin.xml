@@ -9,7 +9,11 @@
     <depends>com.intellij.modules.platform</depends>
 
     <extensions defaultExtensionNs="com.intellij">
-        <fileType name="HetuScript" implementationClass="com.hetu.hetuscript.SimpleHetuFileType"
+        <fileType name="Hetu Script File" implementationClass="com.hetu.hetuscript.HetuFileType"
                   language="HetuScript" extensions="ht"/>
+        <lang.syntaxHighlighterFactory language="HetuScript" 
+                                      implementationClass="com.hetu.hetuscript.HetuSyntaxHighlighterFactory"/>
+        <lang.parserDefinition language="HetuScript"
+                               implementationClass="com.hetu.hetuscript.HetuParserDefinition"/>
     </extensions>
 </idea-plugin>

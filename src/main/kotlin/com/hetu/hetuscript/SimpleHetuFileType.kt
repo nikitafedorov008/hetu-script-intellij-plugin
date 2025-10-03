@@ -11,5 +11,5 @@ class SimpleHetuFileType : LanguageFileType(HetuLanguage) {
     override fun getName() = "HetuScript"
     override fun getDescription() = "Hetu Script file"
     override fun getDefaultExtension() = "ht"
-    override fun getIcon(): Icon? = null
+    override fun getIcon(): Icon? = HetuIcons.FILE
 }
