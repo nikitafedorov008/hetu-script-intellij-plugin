@@ -20,7 +20,9 @@ class HetuRunConfigurationEditor : SettingsEditor<HetuRunConfiguration>() {
                 "Select Hetu Script",
                 "Choose a Hetu script file to run",
                 null, // project is available in the configuration
-                FileChooserDescriptor(false, true, false, false, false, false)
+                FileChooserDescriptor(true, false, false, false, false, false)
+                    .withFileFilter { it.extension == "ht" }
+                    .withTitle("Select Hetu Script")
             )
         }
 

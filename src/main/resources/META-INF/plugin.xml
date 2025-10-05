@@ -22,6 +22,9 @@
         <formattingService implementation="com.hetu.hetuscript.formatter.HetuFormattingService"/>
         <configurationType implementation="com.hetu.hetuscript.run.HetuRunConfigurationType"/>
         <configurationType implementation="com.hetu.hetuscript.run.HetuCompileConfigurationType"/>
+        <toolWindow id="Hetu Analyzer" 
+                    factoryClass="com.hetu.hetuscript.toolwindow.HetuAnalyzerToolWindowFactory"
+                    anchor="right"/>
         <localInspection language="HetuScript" 
                          displayName="Hetu Script Analysis" 
                          groupName="Hetu Script" 
@@ -44,6 +47,13 @@
                 text="Hetu Compile" 
                 description="Compile Hetu script file using CLI">
             <add-to-group group-id="BuildMenu" anchor="last"/>
+        </action>
+        
+        <action id="HetuAnalyzeAction" 
+                class="com.hetu.hetuscript.action.HetuAnalyzeAction" 
+                text="Hetu Analyze" 
+                description="Analyze all Hetu script files in the project">
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
         </action>
     </actions>
 </idea-plugin>

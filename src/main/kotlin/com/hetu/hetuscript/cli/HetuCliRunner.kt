@@ -17,15 +17,16 @@ class HetuCliRunner {
 
         fun run(project: Project, hetuFile: VirtualFile): ProcessOutput {
             val commandLine = GeneralCommandLine(HETU_COMMAND, "run", hetuFile.path)
-                .withWorkDirectory(hetuFile.parent.path)
+                .withWorkDirectory(project.basePath ?: hetuFile.parent.path)  // Use project base as working directory
                 .withRedirectErrorStream(true)
 
             return runCommandLine(commandLine)
         }
 
         fun analyze(project: Project, hetuFile: VirtualFile): ProcessOutput {
+            // Use the file path directly - the working directory approach should handle accessibility
             val commandLine = GeneralCommandLine(HETU_COMMAND, "analyze", hetuFile.path)
-                .withWorkDirectory(hetuFile.parent.path)
+                .withWorkDirectory(project.basePath ?: hetuFile.parent.path)  // Use project base as working directory
                 .withRedirectErrorStream(true)
 
             return runCommandLine(commandLine)
@@ -34,11 +35,11 @@ class HetuCliRunner {
         fun format(project: Project, hetuFile: VirtualFile, outFile: String? = null): ProcessOutput {
             val commandLine = if (outFile != null) {
                 GeneralCommandLine(HETU_COMMAND, "format", hetuFile.path, "-o", outFile)
-                    .withWorkDirectory(hetuFile.parent.path)
+                    .withWorkDirectory(project.basePath ?: hetuFile.parent.path)  // Use project base as working directory
                     .withRedirectErrorStream(true)
             } else {
                 GeneralCommandLine(HETU_COMMAND, "format", hetuFile.path)
-                    .withWorkDirectory(hetuFile.parent.path)
+                    .withWorkDirectory(project.basePath ?: hetuFile.parent.path)  // Use project base as working directory
                     .withRedirectErrorStream(true)
             }
 
@@ -47,7 +48,7 @@ class HetuCliRunner {
 
         fun compile(project: Project, hetuFile: VirtualFile, outputPath: String): ProcessOutput {
             val commandLine = GeneralCommandLine(HETU_COMMAND, "compile", hetuFile.path, outputPath)
-                .withWorkDirectory(hetuFile.parent.path)
+                .withWorkDirectory(project.basePath ?: hetuFile.parent.path)  // Use project base as working directory
                 .withRedirectErrorStream(true)
 
             return runCommandLine(commandLine)
