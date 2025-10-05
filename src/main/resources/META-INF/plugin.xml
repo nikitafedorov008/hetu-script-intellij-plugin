@@ -7,13 +7,43 @@
     <description>Support for Hetu Script language (.ht files)</description>
 
     <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.lang</depends>
 
     <extensions defaultExtensionNs="com.intellij">
         <fileType name="Hetu Script File" implementationClass="com.hetu.hetuscript.HetuFileType"
                   language="HetuScript" extensions="ht"/>
         <lang.syntaxHighlighterFactory language="HetuScript" 
                                       implementationClass="com.hetu.hetuscript.HetuSyntaxHighlighterFactory"/>
+        <colorSettingsPage implementation="com.hetu.hetuscript.HetuColorSettingsPage"/>
         <lang.parserDefinition language="HetuScript"
                                implementationClass="com.hetu.hetuscript.HetuParserDefinition"/>
+        <lang.annotator language="HetuScript" 
+                        implementationClass="com.hetu.hetuscript.annotator.HetuAnnotator"/>
+        <formattingService implementation="com.hetu.hetuscript.formatter.HetuFormattingService"/>
+        <configurationType implementation="com.hetu.hetuscript.run.HetuRunConfigurationType"/>
+        <configurationType implementation="com.hetu.hetuscript.run.HetuCompileConfigurationType"/>
+        <localInspection language="HetuScript" 
+                         displayName="Hetu Script Analysis" 
+                         groupName="Hetu Script" 
+                         enabledByDefault="true" 
+                         level="WARNING"
+                         implementationClass="com.hetu.hetuscript.external.HetuAnalyzerInspection"/>
     </extensions>
+    
+    <actions>
+        <action id="RunHetuFile" 
+                class="com.hetu.hetuscript.action.RunHetuFileAction" 
+                text="Run Hetu Script" 
+                description="Run Hetu script file using CLI">
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+        </action>
+        
+        <action id="HetuCompileAction" 
+                class="com.hetu.hetuscript.action.HetuCompileAction" 
+                text="Hetu Compile" 
+                description="Compile Hetu script file using CLI">
+            <add-to-group group-id="BuildMenu" anchor="last"/>
+        </action>
+    </actions>
 </idea-plugin>

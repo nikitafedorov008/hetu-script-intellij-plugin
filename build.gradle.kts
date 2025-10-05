@@ -66,7 +66,9 @@ tasks {
         targetCompatibility = "17"
     }
     
-    // Generate lexer through system JFlex if available
+    // NOTE: JFlex generation is disabled because we're using a custom Kotlin lexer implementation
+    // The generated lexer had conflicts with our custom implementation
+    /*
     val generateLexer by registering(Exec::class) {
         group = "generate"
         description = "Generates lexer from .flex files"
@@ -80,4 +82,5 @@ tasks {
             file("src/gen/java/com/hetu/hetuscript").mkdirs()
         }
     }
+    */
 }

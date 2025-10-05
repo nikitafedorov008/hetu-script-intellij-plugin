@@ -13,7 +13,7 @@ import com.intellij.psi.tree.IFileElementType
 import com.intellij.psi.tree.TokenSet
 
 class HetuParserDefinition : ParserDefinition {
-    override fun createLexer(project: Project?): Lexer = HetuLexer()
+    override fun createLexer(project: Project?): Lexer = HetuScriptLexer()
 
     override fun createParser(project: Project?): PsiParser = HetuPsiParser()
 
