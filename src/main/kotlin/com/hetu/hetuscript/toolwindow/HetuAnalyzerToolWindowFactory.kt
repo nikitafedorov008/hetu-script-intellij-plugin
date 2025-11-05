@@ -23,8 +23,9 @@ class HetuAnalyzerToolWindowFactory : ToolWindowFactory {
 class HetuAnalyzerToolWindow(private val project: Project) {
     private lateinit var panel: JPanel
     private lateinit var textArea: JBTextArea
-    private lateinit var refreshButton: JButton
+    private lateinit var analyzeButton: JButton
     private lateinit var clearButton: JButton
+    private var analyzeAllCallback: (() -> Unit)? = null
 
     init {
         createUIComponents()
@@ -36,12 +37,12 @@ class HetuAnalyzerToolWindow(private val project: Project) {
     private fun createUIComponents() {
         panel = JPanel(BorderLayout())
         
-        // Create toolbar with refresh and clear buttons
+        // Create toolbar with analyze and clear buttons
         val toolbar = JPanel()
-        refreshButton = JButton("Refresh Analysis")
+        analyzeButton = JButton("Analyze All .ht Files")
         clearButton = JButton("Clear")
         
-        toolbar.add(refreshButton)
+        toolbar.add(analyzeButton)
         toolbar.add(clearButton)
         
         // Create text area for results
@@ -57,10 +58,8 @@ class HetuAnalyzerToolWindow(private val project: Project) {
         panel.add(scrollPane, BorderLayout.CENTER)
         
         // Add listeners for buttons
-        refreshButton.addActionListener {
-            // This would trigger a new analysis from the tool window itself
-            // For now, just clear the results
-            textArea.text = "Running analysis... (Refresh functionality would be implemented here)"
+        analyzeButton.addActionListener {
+            analyzeAllCallback?.invoke()
         }
         
         clearButton.addActionListener {
@@ -76,5 +75,9 @@ class HetuAnalyzerToolWindow(private val project: Project) {
     
     fun updateResults(results: String) {
         textArea.text = results
+    }
+    
+    fun setAnalyzeAllCallback(callback: () -> Unit) {
+        this.analyzeAllCallback = callback
     }
 }
