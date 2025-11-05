@@ -10,7 +10,9 @@ object HetuPsiTypes {
     val FILE = IFileElementType(HetuLanguage)
 
     // These will be the element types for PSI elements
-    // For now, we can create placeholders
+    val VAR_DECLARATION = HetuElementType("VAR_DECLARATION")
+    val FUNCTION_DECLARATION = HetuElementType("FUNCTION_DECLARATION")
+    val CLASS_DECLARATION = HetuElementType("CLASS_DECLARATION")
     
     object Factory {
         fun createElement(node: ASTNode): PsiElement {
@@ -18,3 +20,5 @@ object HetuPsiTypes {
         }
     }
 }
+
+class HetuElementType(debugName: String) : IElementType(debugName, HetuLanguage)

@@ -5,6 +5,12 @@ object HetuTokenTypes {
     @JvmField
     val IDENTIFIER = HetuTokenType("IDENTIFIER")
     @JvmField
+    val VARIABLE_NAME = HetuTokenType("VARIABLE_NAME")
+    @JvmField
+    val CLASS_NAME = HetuTokenType("CLASS_NAME")
+    @JvmField
+    val FUNCTION_NAME = HetuTokenType("FUNCTION_NAME")
+    @JvmField
     val NUMBER = HetuTokenType("NUMBER")
     @JvmField
     val STRING = HetuTokenType("STRING")
@@ -38,7 +44,23 @@ object HetuTokenTypes {
     @JvmField
     val ESCAPE_SEQUENCE = HetuTokenType("ESCAPE_SEQUENCE")
     
-    // Keyword categories from VS Code
+    // Keyword categories for control flow and declaration constructs
+    @JvmField
+    val CONTROL_FLOW_KEYWORD = HetuTokenType("CONTROL_FLOW_KEYWORD")  // Keywords like: if, else, elif, for, while, do, switch, case, default, try, catch, finally, etc.
+    @JvmField
+    val DECLARATION_KEYWORD = HetuTokenType("DECLARATION_KEYWORD")  // Keywords like: class, abstract, async, await, func, etc.
+    
+    // Other keyword categories based on your custom file type configuration
+    @JvmField
+    val CONTROL_DECLARATION_KEYWORD = HetuTokenType("CONTROL_DECLARATION_KEYWORD")  // Other keywords like: as, assert, break, case, const, continue, etc.
+    @JvmField
+    val OPERATOR_SPECIAL_KEYWORD = HetuTokenType("OPERATOR_SPECIAL_KEYWORD")  // Operators and special methods: :, <, =, >, build, construct, fetch, print, rebuild
+    @JvmField
+    val TYPE_KEYWORD = HetuTokenType("TYPE_KEYWORD")  // Type keywords: any, bool, int, string, etc.
+    @JvmField
+    val LITERAL_BRACKET_KEYWORD = HetuTokenType("LITERAL_BRACKET_KEYWORD")  // Literal values and brackets: (), [], {}, false, null, super, this, true, etc.
+    
+    // Original keyword categories from VS Code
     @JvmField
     val KEYWORD_CONTROL = HetuTokenType("KEYWORD_CONTROL")  // if, else, for, while, break, continue, return, etc.
     @JvmField
@@ -179,6 +201,14 @@ object HetuTokenTypes {
     val TEMPLATE_STRING = HetuTokenType("TEMPLATE_STRING")
     @JvmField
     val ESCAPED_STRING = HetuTokenType("ESCAPED_STRING")
+    
+    // HetuScript specific constructs
+    @JvmField
+    val EXTENDS_KEYWORD = HetuTokenType("EXTENDS_KEYWORD")  // For 'extends' keyword
+    @JvmField
+    val AWAIT_KEYWORD = HetuTokenType("AWAIT_KEYWORD")  // For 'await' keyword
+    @JvmField
+    val YIELD_KEYWORD = HetuTokenType("YIELD_KEYWORD")  // For 'yield' keyword
     
     // More specific bracket types
     @JvmField

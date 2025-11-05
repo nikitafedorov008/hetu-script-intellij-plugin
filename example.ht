@@ -1,0 +1,73 @@
+//import 'source1.ht'
+import 'source2.ht'
+//import 'module:person.ht'
+import 'module:text.ht'
+import 'module:material_button.ht'
+import 'module:script_container.ht'
+import 'module:widget.ht'
+import 'module:isolate.ht'
+
+external fun fetch
+external fun rebuild
+external fun build
+
+class Main extends Widget {
+    construct(ticker) {}
+
+    var number = 0
+
+    fun init() {
+        number = 4
+    }
+
+    fun doSomeComputation async {
+        fun _calc(value:num) {
+            var result = 2;
+            return result;
+        }
+        var response = await _calc(4)
+        print('calc result: ${response}')
+    }
+
+    fun onPressedButton(value) async {
+        await doSomeComputation()
+        number = number - value
+        print('number: ${number}')
+        rebuild()
+    }
+
+    fun testIsolate(value) async {
+        var script = '''
+            fun heavyTask(n: num, config) {
+                var multiplier = config.multiplier ?? 1
+                return n * multiplier
+            }
+        ''';
+
+        var result = await Isolate.run(
+            script,
+            'heavyTask',
+            positionalArgs: [42],
+            namedArgs: { 'multiplier': 10 }
+        );
+
+        print('Result: ${result}');
+
+        number = number - value
+        rebuild()
+    }
+
+    fun build(context) {
+        return MaterialButton(
+            child: Text('number: ${number}'),
+            onPressed: () => onPressedButton(3),
+        )
+    }
+}
+
+fun main({ticker = 0}) {
+    print('>>> main() called with ticker: ${ticker}')
+    return ScriptContainer(
+        child: Main(ticker)
+    )
+}

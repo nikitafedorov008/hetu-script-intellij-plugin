@@ -24,6 +24,7 @@ dependencies {
         // Add necessary plugin dependencies for compilation here, example:
         // bundledPlugin("com.intellij.java")
         bundledPlugin("com.intellij.java")
+        bundledPlugin("org.jetbrains.plugins.textmate")
         implementation("org.jetbrains.kotlin:kotlin-stdlib")
         implementation("org.jetbrains.kotlin:kotlin-reflect")
         implementation("com.intellij:annotations:+@jar") // sometimes helps

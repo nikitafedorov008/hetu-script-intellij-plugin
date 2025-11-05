@@ -31,7 +31,16 @@ class HetuParserDefinition : ParserDefinition {
 
     companion object {
         val WHITE_SPACES = TokenSet.create(TokenType.WHITE_SPACE)
-        val COMMENTS = TokenSet.create(HetuTokenTypes.COMMENT)
-        val STRINGS = TokenSet.create(HetuTokenTypes.STRING)
+        val COMMENTS = TokenSet.create(
+            HetuTokenTypes.COMMENT,
+            HetuTokenTypes.LINE_COMMENT,
+            HetuTokenTypes.BLOCK_COMMENT
+        )
+        val STRINGS = TokenSet.create(
+            HetuTokenTypes.STRING,
+            HetuTokenTypes.STRING_DOUBLE,
+            HetuTokenTypes.STRING_SINGLE,
+            HetuTokenTypes.TEMPLATE_STRING
+        )
     }
 }

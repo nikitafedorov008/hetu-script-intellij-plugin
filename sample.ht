@@ -1,0 +1,42 @@
+// Hetu Script example
+import "std" as std;
+
+fun main() {
+  var x = 42;
+  var message = "Hello, Hetu Script!";
+  
+  // Conditional statement
+  if (x > 0) {
+    print(message);
+  } else {
+    print("Negative number");
+  }
+  
+  // Loop example
+  for (var i = 0; i < 5; i++) {
+    print("Count: " + i);
+  }
+  
+  // Function call
+  var result = add(10, 20);
+  print("Result: " + result);
+}
+
+fun add(a: int, b: int): int {
+  return a + b;
+}
+
+// Class example
+class Person {
+  var name: string;
+  var age: int;
+  
+  construct(name: string, age: int) {
+    this.name = name;
+    this.age = age;
+  }
+  
+  fun greet() -> string {
+    return "Hello, I'm " + this.name + " and I'm " + this.age + " years old.";
+  }
+}

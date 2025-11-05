@@ -16,6 +16,9 @@ class HetuSyntaxHighlighter : SyntaxHighlighterBase() {
         return when (tokenType) {
             // Basic tokens
             HetuTokenTypes.IDENTIFIER -> IDENTIFIER_KEYS
+            HetuTokenTypes.VARIABLE_NAME -> VARIABLE_NAME_KEYS
+            HetuTokenTypes.CLASS_NAME -> CLASS_NAME_KEYS
+            HetuTokenTypes.FUNCTION_NAME -> FUNCTION_NAME_KEYS
             HetuTokenTypes.NUMBER -> NUMBER_KEYS
             HetuTokenTypes.STRING_DOUBLE, HetuTokenTypes.STRING_SINGLE -> STRING_KEYS
             HetuTokenTypes.COMMENT -> COMMENT_KEYS
@@ -40,7 +43,17 @@ class HetuSyntaxHighlighter : SyntaxHighlighterBase() {
             HetuTokenTypes.SINGLE_LINE_COMMENT -> SINGLE_LINE_COMMENT_KEYS
             HetuTokenTypes.MULTI_LINE_COMMENT -> MULTI_LINE_COMMENT_KEYS
             
-            // Keyword categories from VS Code
+            // Keyword categories for specific constructs
+            HetuTokenTypes.CONTROL_FLOW_KEYWORD -> CONTROL_FLOW_KEYWORD_KEYS
+            HetuTokenTypes.DECLARATION_KEYWORD -> DECLARATION_KEYWORD_KEYS
+            
+            // Other keyword categories based on your custom file type configuration
+            HetuTokenTypes.CONTROL_DECLARATION_KEYWORD -> CONTROL_DECLARATION_KEYWORD_KEYS
+            HetuTokenTypes.OPERATOR_SPECIAL_KEYWORD -> OPERATOR_SPECIAL_KEYWORD_KEYS
+            HetuTokenTypes.TYPE_KEYWORD -> TYPE_KEYWORD_KEYS
+            HetuTokenTypes.LITERAL_BRACKET_KEYWORD -> LITERAL_BRACKET_KEYWORD_KEYS
+            
+            // Original keyword categories from VS Code
             HetuTokenTypes.KEYWORD_CONTROL -> KEYWORD_CONTROL_KEYS
             HetuTokenTypes.KEYWORD_DECLARATION -> KEYWORD_DECLARATION_KEYS
             HetuTokenTypes.STORAGE_MODIFIER -> STORAGE_MODIFIER_KEYS
@@ -162,6 +175,11 @@ class HetuSyntaxHighlighter : SyntaxHighlighterBase() {
             HetuTokenTypes.PUNCTUATION_COMMA -> PUNCTUATION_COMMA_KEYS
             HetuTokenTypes.PUNCTUATION_COLON -> COLON_PUNCTUATION_KEYS
             
+            // HetuScript specific tokens
+            HetuTokenTypes.EXTENDS_KEYWORD -> EXTENDS_KEYWORD_KEYS
+            HetuTokenTypes.AWAIT_KEYWORD -> AWAIT_KEYWORD_KEYS
+            HetuTokenTypes.YIELD_KEYWORD -> YIELD_KEYWORD_KEYS
+            
             com.intellij.psi.TokenType.WHITE_SPACE -> EMPTY_KEYS
             else -> BAD_CHARACTER_KEYS
         }
@@ -177,6 +195,21 @@ class HetuSyntaxHighlighter : SyntaxHighlighterBase() {
         val IDENTIFIER_KEY = TextAttributesKey.createTextAttributesKey(
             "HETU_IDENTIFIER",
             DefaultLanguageHighlighterColors.IDENTIFIER
+        )
+        
+        val VARIABLE_NAME_KEY = TextAttributesKey.createTextAttributesKey(
+            "HETU_VARIABLE_NAME",
+            DefaultLanguageHighlighterColors.LOCAL_VARIABLE
+        )
+        
+        val CLASS_NAME_KEY = TextAttributesKey.createTextAttributesKey(
+            "HETU_CLASS_NAME",
+            DefaultLanguageHighlighterColors.CLASS_NAME
+        )
+        
+        val FUNCTION_NAME_KEY = TextAttributesKey.createTextAttributesKey(
+            "HETU_FUNCTION_NAME",
+            DefaultLanguageHighlighterColors.FUNCTION_DECLARATION
         )
         
         val NUMBER_KEY = TextAttributesKey.createTextAttributesKey(
@@ -268,7 +301,39 @@ class HetuSyntaxHighlighter : SyntaxHighlighterBase() {
             DefaultLanguageHighlighterColors.BLOCK_COMMENT
         )
         
-        // Keyword categories - using different colors with more variety
+        // Keyword categories for specific constructs
+        val CONTROL_FLOW_KEYWORD_KEY = TextAttributesKey.createTextAttributesKey(
+            "HETU_CONTROL_FLOW_KEYWORD",
+            DefaultLanguageHighlighterColors.KEYWORD
+        )
+        
+        val DECLARATION_KEYWORD_KEY = TextAttributesKey.createTextAttributesKey(
+            "HETU_DECLARATION_KEYWORD",
+            DefaultLanguageHighlighterColors.METADATA
+        )
+        
+        // Other keyword categories based on your custom file type configuration
+        val CONTROL_DECLARATION_KEYWORD_KEY = TextAttributesKey.createTextAttributesKey(
+            "HETU_CONTROL_DECLARATION_KEYWORD",
+            DefaultLanguageHighlighterColors.KEYWORD
+        )
+        
+        val OPERATOR_SPECIAL_KEYWORD_KEY = TextAttributesKey.createTextAttributesKey(
+            "HETU_OPERATOR_SPECIAL_KEYWORD",
+            DefaultLanguageHighlighterColors.KEYWORD
+        )
+        
+        val TYPE_KEYWORD_KEY = TextAttributesKey.createTextAttributesKey(
+            "HETU_TYPE_KEYWORD",
+            DefaultLanguageHighlighterColors.KEYWORD
+        )
+        
+        val LITERAL_BRACKET_KEYWORD_KEY = TextAttributesKey.createTextAttributesKey(
+            "HETU_LITERAL_BRACKET_KEYWORD",
+            DefaultLanguageHighlighterColors.CONSTANT
+        )
+        
+        // Original keyword categories from VS Code
         val KEYWORD_CONTROL_KEY = TextAttributesKey.createTextAttributesKey(
             "HETU_KEYWORD_CONTROL",
             DefaultLanguageHighlighterColors.KEYWORD
@@ -479,6 +544,22 @@ class HetuSyntaxHighlighter : SyntaxHighlighterBase() {
         val TYPE_ANNOTATION_KEY = TextAttributesKey.createTextAttributesKey(
             "HETU_TYPE_ANNOTATION",
             DefaultLanguageHighlighterColors.METADATA
+        )
+        
+        // HetuScript specific constructs
+        val EXTENDS_KEYWORD_KEY = TextAttributesKey.createTextAttributesKey(
+            "HETU_EXTENDS_KEYWORD",
+            DefaultLanguageHighlighterColors.KEYWORD
+        )
+        
+        val AWAIT_KEYWORD_KEY = TextAttributesKey.createTextAttributesKey(
+            "HETU_AWAIT_KEYWORD",
+            DefaultLanguageHighlighterColors.KEYWORD
+        )
+        
+        val YIELD_KEYWORD_KEY = TextAttributesKey.createTextAttributesKey(
+            "HETU_YIELD_KEYWORD",
+            DefaultLanguageHighlighterColors.KEYWORD
         )
         
         // Special tokens with various colors
@@ -709,6 +790,9 @@ class HetuSyntaxHighlighter : SyntaxHighlighterBase() {
 
         // Basic tokens
         private val IDENTIFIER_KEYS = arrayOf(IDENTIFIER_KEY)
+        private val VARIABLE_NAME_KEYS = arrayOf(VARIABLE_NAME_KEY)
+        private val CLASS_NAME_KEYS = arrayOf(CLASS_NAME_KEY)
+        private val FUNCTION_NAME_KEYS = arrayOf(FUNCTION_NAME_KEY)
         private val NUMBER_KEYS = arrayOf(NUMBER_KEY)
         private val STRING_KEYS = arrayOf(STRING_KEY)
         private val COMMENT_KEYS = arrayOf(COMMENT_KEY)
@@ -764,7 +848,17 @@ class HetuSyntaxHighlighter : SyntaxHighlighterBase() {
         private val WHILE_LOOP_KEYS = arrayOf(WHILE_LOOP_KEY)
         private val DO_WHILE_LOOP_KEYS = arrayOf(DO_WHILE_LOOP_KEY)
         
-        // Keyword categories from VS Code
+        // Keyword categories for specific constructs
+        private val CONTROL_FLOW_KEYWORD_KEYS = arrayOf(CONTROL_FLOW_KEYWORD_KEY)
+        private val DECLARATION_KEYWORD_KEYS = arrayOf(DECLARATION_KEYWORD_KEY)
+        
+        // Other keyword categories based on custom file type configuration
+        private val CONTROL_DECLARATION_KEYWORD_KEYS = arrayOf(CONTROL_DECLARATION_KEYWORD_KEY)
+        private val OPERATOR_SPECIAL_KEYWORD_KEYS = arrayOf(OPERATOR_SPECIAL_KEYWORD_KEY)
+        private val TYPE_KEYWORD_KEYS = arrayOf(TYPE_KEYWORD_KEY)
+        private val LITERAL_BRACKET_KEYWORD_KEYS = arrayOf(LITERAL_BRACKET_KEYWORD_KEY)
+        
+        // Original keyword categories from VS Code
         private val KEYWORD_CONTROL_KEYS = arrayOf(KEYWORD_CONTROL_KEY)
         private val KEYWORD_DECLARATION_KEYS = arrayOf(KEYWORD_DECLARATION_KEY)
         private val STORAGE_MODIFIER_KEYS = arrayOf(STORAGE_MODIFIER_KEY)
@@ -854,6 +948,11 @@ class HetuSyntaxHighlighter : SyntaxHighlighterBase() {
         private val ACCESSOR_OPERATOR_KEYS = arrayOf(ACCESSOR_OPERATOR_KEY)
         private val ARROW_OPERATOR_KEYS = arrayOf(ARROW_OPERATOR_KEY)
         private val NULL_COALESCING_OPERATOR_KEYS = arrayOf(NULL_COALESCING_OPERATOR_KEY)
+        
+        // HetuScript specific token key arrays
+        private val EXTENDS_KEYWORD_KEYS = arrayOf(EXTENDS_KEYWORD_KEY)
+        private val AWAIT_KEYWORD_KEYS = arrayOf(AWAIT_KEYWORD_KEY)
+        private val YIELD_KEYWORD_KEYS = arrayOf(YIELD_KEYWORD_KEY)
         
         private val BAD_CHARACTER_KEYS = arrayOf(BAD_CHARACTER_KEY)
         private val EMPTY_KEYS = arrayOf<TextAttributesKey>()

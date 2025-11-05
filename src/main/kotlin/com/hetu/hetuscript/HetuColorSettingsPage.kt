@@ -30,62 +30,114 @@ class HetuColorSettingsPage : ColorSettingsPage {
     }
 
     override fun getDemoText(): String {
-        return """// Hetu Script demo code
+        return """// Hetu Script demo code with distinct keyword categories
+// CONTROL FLOW keywords (if, else, elif, for, while, do, switch, case, default, try, catch, finally)
+// DECLARATION keywords (class, abstract, async, await, func, interface, extends, construct)
+
 import hetu.std.*
 
 /* This is a 
    multi-line comment */
 
-var someNumber = 42
-var someString = "Hello, World!"
-var someBool = true
-var someList = [1, 2, 3, 4]
+// Variables and types
+var someNumber: int = 42
+var someString: string = "Hello, World!"
+var someBool: bool = true
+var someList: array = [1, 2, 3, 4]
 
-fun fibonacci(n: int) -> int {
-    if (n <= 1) {
-        return n
-    } else {
-        return fibonacci(n - 1) + fibonacci(n - 2)
+// Interface declaration - DECLARATION keyword
+interface Drawable {  // DECLARATION: interface
+    func draw(): void
+}
+
+// Class with inheritance - DECLARATION keywords
+abstract class BaseClass extends Drawable {  // DECLARATION: abstract, class, extends
+    async func processData() -> string {  // DECLARATION keywords: async, func
+        if (someNumber > 0) {  // CONTROL FLOW keyword: if
+            for (i in 0..10) {  // CONTROL FLOW keywords: for, in
+                if (i % 2 == 0) {  // CONTROL FLOW: if
+                    return "Even number: " + i
+                } elif (i == 5) {  // CONTROL FLOW: elif
+                    break  // CONTROL FLOW: break
+                } else {  // CONTROL FLOW: else
+                    continue  // CONTROL FLOW: continue
+                }
+            }
+        } else {  // CONTROL FLOW: else
+            try {  // CONTROL FLOW: try
+                await someAsyncOperation()  // DECLARATION: await
+            } catch (error) {  // CONTROL FLOW: catch
+                print("Error occurred")
+            } finally {  // CONTROL FLOW: finally
+                print("Cleanup done")
+            }
+        }
+        
+        switch (someNumber) {  // CONTROL FLOW: switch
+            case 1:  // CONTROL FLOW: case
+                print("One")
+                break
+            default:  // CONTROL FLOW: default
+                print("Other")
+        }
+        
+        do {  // CONTROL FLOW: do
+            someNumber = someNumber - 1
+        } while (someNumber > 0)  // CONTROL FLOW: while
     }
 }
 
-class Person {
-    var name: String
+// Class with constructor - DECLARATION keywords  
+class Person extends BaseClass {  // DECLARATION: class, extends
+    var name: string
     var age: int
     
-    constructor(name: String, age: int) {
+    construct(name: string, age: int) {  // DECLARATION: construct
         this.name = name
         this.age = age
     }
     
-    fun greet() -> String {
-        return "Hello, I'm " + this.name + " and I'm " + this.age + " years old."
+    func greet() -> string {  // DECLARATION: func
+        return "Hello, I'm " + this.name  // CONTROL FLOW: return
     }
-}
-
-enum Color {
-    RED, GREEN, BLUE
 }
 
 var p = Person("Alice", 30)
-println(p.greet())
+var result = p.greet()
 
-for (i in 0..10) {
-    if (i % 2 == 0) {
-        println("Even: " + i)
-    } else {
-        println("Odd: " + i)
+// Additional examples with keywords
+const MAX_SIZE: int = 100  // Not a CONTROL/DECLARATION keyword
+var count: int = 0  // Not a CONTROL/DECLARATION keyword
+
+if (true) {  // CONTROL FLOW: if
+    build()  // This is in OPERATOR/SPECIAL category
+    null  // This is in LITERAL/BRACKET category
+}
+
+// Control flow examples
+while (count < 5) {  // CONTROL FLOW: while
+    count = count + 1
+    if (count == 3) {  // CONTROL FLOW: if
+        break  // CONTROL FLOW: break
     }
 }
 
-var result = someBool ? "Yes" : "No"
-assert(result == "Yes")
+// More examples of Declaration keywords
+class Animal {  // DECLARATION: class
+    construct() {  // DECLARATION: construct
+        print("Animal created")
+    }
+}
 
-// Different variable types
-const MAX_SIZE = 100
-late var lazyValue: String
-external fun externalFunction(): void
-static var count: int = 0
+interface Movable {  // DECLARATION: interface
+    func move(): void
+}
+
+class Car extends Animal implements Movable {  // DECLARATION: class, extends
+    async func start() {  // DECLARATION: async, func
+        await initialize()
+    }
+}
 """
     }
 
@@ -127,7 +179,17 @@ static var count: int = 0
             AttributesDescriptor("Single Line Comment", HetuSyntaxHighlighter.SINGLE_LINE_COMMENT_KEY),
             AttributesDescriptor("Multi Line Comment", HetuSyntaxHighlighter.MULTI_LINE_COMMENT_KEY),
             
-            // Keyword categories from VS Code
+            // Keyword categories for specific constructs
+            AttributesDescriptor("Control Flow Keyword", HetuSyntaxHighlighter.CONTROL_FLOW_KEYWORD_KEY),
+            AttributesDescriptor("Declaration Keyword", HetuSyntaxHighlighter.DECLARATION_KEYWORD_KEY),
+            
+            // Other keyword categories based on custom file type configuration
+            AttributesDescriptor("Control/Declaration Keyword", HetuSyntaxHighlighter.CONTROL_DECLARATION_KEYWORD_KEY),
+            AttributesDescriptor("Operator/Special Keyword", HetuSyntaxHighlighter.OPERATOR_SPECIAL_KEYWORD_KEY),
+            AttributesDescriptor("Type Keyword", HetuSyntaxHighlighter.TYPE_KEYWORD_KEY),
+            AttributesDescriptor("Literal/Bracket Keyword", HetuSyntaxHighlighter.LITERAL_BRACKET_KEYWORD_KEY),
+            
+            // Original keyword categories from VS Code
             AttributesDescriptor("Keyword Control", HetuSyntaxHighlighter.KEYWORD_CONTROL_KEY),
             AttributesDescriptor("Keyword Declaration", HetuSyntaxHighlighter.KEYWORD_DECLARATION_KEY),
             AttributesDescriptor("Storage Modifier", HetuSyntaxHighlighter.STORAGE_MODIFIER_KEY),

@@ -8,6 +8,7 @@
 
     <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.modules.lang</depends>
+    <depends>org.jetbrains.plugins.textmate</depends>
 
     <extensions defaultExtensionNs="com.intellij">
         <fileType name="Hetu Script File" implementationClass="com.hetu.hetuscript.HetuFileType"
@@ -19,6 +20,8 @@
                                implementationClass="com.hetu.hetuscript.HetuParserDefinition"/>
         <lang.annotator language="HetuScript" 
                         implementationClass="com.hetu.hetuscript.annotator.HetuAnnotator"/>
+        <lang.annotator language="HetuScript" 
+                        implementationClass="com.hetu.hetuscript.annotator.HetuSemanticAnnotator"/>
         <formattingService implementation="com.hetu.hetuscript.formatter.HetuFormattingService"/>
         <configurationType implementation="com.hetu.hetuscript.run.HetuRunConfigurationType"/>
         <configurationType implementation="com.hetu.hetuscript.run.HetuCompileConfigurationType"/>

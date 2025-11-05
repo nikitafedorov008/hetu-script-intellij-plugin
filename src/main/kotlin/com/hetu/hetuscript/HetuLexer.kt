@@ -74,16 +74,53 @@ class HetuScriptLexer : Lexer() {
             return
         }
         
-        // Strings
+        // Strings - enhanced to support template strings with interpolation
         if (ch == '"') {
             tokenEnd = tokenStart + 1
+            var hasInterpolation = false
             while (tokenEnd < endOffset && buffer[tokenEnd] != '"') {
+                // Handle escape sequences
+                if (buffer[tokenEnd] == '\\') {
+                    tokenEnd++
+                    if (tokenEnd < endOffset) tokenEnd++
+                    continue
+                }
+                // Check for string interpolation
+                if (tokenEnd + 1 < endOffset && buffer[tokenEnd] == '$' && buffer[tokenEnd + 1] == '{') {
+                    hasInterpolation = true
+                    tokenEnd++
+                }
                 tokenEnd++
             }
             if (tokenEnd < endOffset) {
                 tokenEnd++ // Closing quote
             }
-            tokenType = HetuTokenTypes.STRING
+            tokenType = if (hasInterpolation) HetuTokenTypes.TEMPLATE_STRING else HetuTokenTypes.STRING_DOUBLE
+            return
+        }
+        
+        // Single quote strings
+        if (ch == '\'') {
+            tokenEnd = tokenStart + 1
+            var hasInterpolation = false
+            while (tokenEnd < endOffset && buffer[tokenEnd] != '\'') {
+                // Handle escape sequences
+                if (buffer[tokenEnd] == '\\') {
+                    tokenEnd++
+                    if (tokenEnd < endOffset) tokenEnd++
+                    continue
+                }
+                // Check for string interpolation
+                if (tokenEnd + 1 < endOffset && buffer[tokenEnd] == '$' && buffer[tokenEnd + 1] == '{') {
+                    hasInterpolation = true
+                    tokenEnd++
+                }
+                tokenEnd++
+            }
+            if (tokenEnd < endOffset) {
+                tokenEnd++ // Closing quote
+            }
+            tokenType = if (hasInterpolation) HetuTokenTypes.TEMPLATE_STRING else HetuTokenTypes.STRING_SINGLE
             return
         }
         
@@ -120,10 +157,34 @@ class HetuScriptLexer : Lexer() {
             
             val text = buffer.subSequence(tokenStart, tokenEnd).toString()
             tokenType = when (text) {
-                // More specific control keywords
+                // Control flow keywords
+                "if", "else", "elif", "for", "while", "do", "switch", "case", "default", "try", "catch", "finally" ->
+                    HetuTokenTypes.CONTROL_FLOW_KEYWORD
+                
+                // Declaration keywords
+                "class", "abstract", "async", "await", "func", "interface", "extends", "construct" ->
+                    HetuTokenTypes.DECLARATION_KEYWORD
+                
+                // Other Column 1 keywords: as, assert, break, case, catch, const, continue, default, export, extends, external, final, finally, fun, import, in, is, new, private, protected, public, return, static, throw, try, var, when, while
+                "as", "assert", "break", "case", "catch", "const", "continue", "export", "extends", "external", "final", "finally", "fun", "import", "in", "is", "new", "private", "protected", "public", "return", "static", "throw", "try", "var", "when", "while" ->
+                    HetuTokenTypes.CONTROL_DECLARATION_KEYWORD
+                
+                // Custom file type Column 2: Operators and special methods
+                "build", "construct", "fetch", "print", "rebuild" -> HetuTokenTypes.OPERATOR_SPECIAL_KEYWORD
+                
+                // Custom file type Column 3: Type keywords
+                "any", "array", "bool", "boolean", "dict", "dictionary", "double", "dynamic", "float", "int", "list", "map", "num", "object", "str", "string", "unit", "void" ->
+                    HetuTokenTypes.TYPE_KEYWORD
+                
+                // Custom file type Column 4: Literal values and special identifiers
+                "true", "false" -> HetuTokenTypes.LITERAL_BRACKET_KEYWORD
+                "null", "undefined" -> HetuTokenTypes.LITERAL_BRACKET_KEYWORD
+                "this", "super" -> HetuTokenTypes.LITERAL_BRACKET_KEYWORD
+                
+                // More specific control keywords (fallback for keywords not in Column 1)
                 "if" -> HetuTokenTypes.IF_CONDITIONAL
                 "else" -> HetuTokenTypes.ELSE_CONDITIONAL
-                "elif" -> HetuTokenTypes.ELIF_CONDITIONAL  // if Hetu supports elif
+                "elif" -> HetuTokenTypes.ELIF_CONDITIONAL
                 
                 // More specific loop keywords
                 "for" -> HetuTokenTypes.FOR_LOOP
@@ -134,30 +195,29 @@ class HetuScriptLexer : Lexer() {
                 "switch", "when", "case", "default" -> HetuTokenTypes.SWITCH_KEYWORD
                 "in", "is" -> HetuTokenTypes.KEYWORD_CONTROL
                 
-                // Variable declaration keywords  
+                // Variable declaration keywords (fallback for keywords not in Column 1) 
                 "var" -> HetuTokenTypes.VAR_DECLARATION
                 "const" -> HetuTokenTypes.CONST_DECLARATION
                 "final" -> HetuTokenTypes.FINAL_DECLARATION
                 
-                // More specific function keywords
-                "fun", "function" -> HetuTokenTypes.FUNCTION_KEYWORD
+                // More specific function keywords (fallback for keywords not in Column 1)
+                "function" -> HetuTokenTypes.FUNCTION_KEYWORD
                 "get", "set" -> HetuTokenTypes.GET_SET_FUNCTION
                 "constructor", "construct" -> HetuTokenTypes.CONSTRUCTOR_FUNCTION
                 
-                // Class and structure keywords
-                "class", "struct", "namespace" -> HetuTokenTypes.CLASS_KEYWORD
-                "interface", "override", "virtual", "late", "typedef" -> HetuTokenTypes.KEYWORD_DECLARATION
+                // Class and structure keywords (fallback for keywords not in Column 1)
+                "struct", "namespace" -> HetuTokenTypes.CLASS_KEYWORD
+                "interface", "override", "virtual", "late", "typedef", "extends" -> HetuTokenTypes.KEYWORD_DECLARATION
                 
-                // Storage modifiers
+                // Storage modifiers (fallback for keywords not in Column 1)
                 "public" -> HetuTokenTypes.PUBLIC_MODIFIER
                 "private" -> HetuTokenTypes.PRIVATE_MODIFIER
                 "protected" -> HetuTokenTypes.STORAGE_MODIFIER
                 "external" -> HetuTokenTypes.EXTERNAL_MODIFIER
                 "static" -> HetuTokenTypes.STATIC_MODIFIER
-                "async", "abstract" -> HetuTokenTypes.MODIFIER_KEYWORD
                 
-                // Storage types (Hetu-specific)
-                "int", "double", "bool", "str", "num", "any", "void", "never", "unknown", "String", "List", "Map", "dynamic", "Object" ->
+                // Storage types (Hetu-specific) - fallback if not in Column 3
+                "double", "str", "num", "void", "never", "unknown", "String", "List", "Map", "dynamic", "Object" ->
                     HetuTokenTypes.STORAGE_TYPE_HETU
                 
                 // Import/export keywords
@@ -167,12 +227,10 @@ class HetuScriptLexer : Lexer() {
                 // Enum keyword
                 "enum" -> HetuTokenTypes.ENUM_KEYWORD
                 
-                // Other keywords
-                "assert" -> HetuTokenTypes.ASSERT_KEYWORD
-                "new" -> HetuTokenTypes.NEW_KEYWORD
+                // Other keywords (fallback for keywords not in Column 1)
                 "typeof", "instanceof" -> HetuTokenTypes.TYPEOF_KEYWORD
                 
-                // Primitive values - more specific types
+                // Primitive values - fallback if not in Column 4
                 "true", "false" -> HetuTokenTypes.BOOLEAN_LITERAL
                 "null", "undefined" -> HetuTokenTypes.NULL_LITERAL
                 "this", "super" -> HetuTokenTypes.THIS_SUPER_LITERAL
@@ -186,16 +244,21 @@ class HetuScriptLexer : Lexer() {
         // Single character operators/punctuation
         tokenEnd = tokenStart + 1
         tokenType = when (ch) {
-            '{' -> HetuTokenTypes.CURLY_BRACES
-            '}' -> HetuTokenTypes.CURLY_BRACES
-            '[' -> HetuTokenTypes.SQUARE_BRACKETS
-            ']' -> HetuTokenTypes.SQUARE_BRACKETS
-            '(' -> HetuTokenTypes.ROUND_BRACKETS
-            ')' -> HetuTokenTypes.ROUND_BRACKETS
-            '.' -> HetuTokenTypes.DOT
+            '{' -> HetuTokenTypes.LITERAL_BRACKET_KEYWORD  // "{" from custom Column 4
+            '}' -> HetuTokenTypes.LITERAL_BRACKET_KEYWORD  // "}" from custom Column 4
+            '[' -> HetuTokenTypes.LITERAL_BRACKET_KEYWORD  // "[" from custom Column 4
+            ']' -> HetuTokenTypes.LITERAL_BRACKET_KEYWORD  // "]" from custom Column 4
+            '(' -> HetuTokenTypes.LITERAL_BRACKET_KEYWORD  // "(" from custom Column 4
+            ')' -> HetuTokenTypes.LITERAL_BRACKET_KEYWORD  // ")" from custom Column 4
+            '.' -> {
+                HetuTokenTypes.DOT
+            }
             ',' -> HetuTokenTypes.COMMA
             ';' -> HetuTokenTypes.SEMICOLON
-            ':' -> HetuTokenTypes.PUNCTUATION_COLON
+            ':' -> {
+                // In your custom file type, ":" is in Column 2 (operators and special methods)
+                HetuTokenTypes.OPERATOR_SPECIAL_KEYWORD
+            }
             '+' -> {
                 if (tokenEnd < endOffset && buffer[tokenEnd] == '+') {
                     tokenEnd++  // consume the second +
@@ -208,6 +271,9 @@ class HetuScriptLexer : Lexer() {
                 if (tokenEnd < endOffset && buffer[tokenEnd] == '-') {
                     tokenEnd++  // consume the second -
                     HetuTokenTypes.INCREMENT_DECREMENT_OPERATOR
+                } else if (tokenEnd < endOffset && buffer[tokenEnd] == '>') {
+                    tokenEnd++  // consume the >
+                    HetuTokenTypes.ARROW_OPERATOR  // Arrow function: -> 
                 } else {
                     HetuTokenTypes.ARITHMETIC_OPERATOR
                 }
@@ -241,16 +307,16 @@ class HetuScriptLexer : Lexer() {
                     when (buffer[tokenEnd]) {
                         '=' -> {
                             tokenEnd++  // consume the second =
-                            HetuTokenTypes.COMPARISON_OPERATOR
+                            HetuTokenTypes.OPERATOR_SPECIAL_KEYWORD  // "==" as operator from custom config
                         }
                         '>' -> {
                             tokenEnd++  // consume the >
-                            HetuTokenTypes.ARROW_OPERATOR  // we'll create this if needed
+                            HetuTokenTypes.OPERATOR_SPECIAL_KEYWORD  // "=>" as operator from custom config
                         }
-                        else -> HetuTokenTypes.ASSIGNMENT_OPERATOR
+                        else -> HetuTokenTypes.OPERATOR_SPECIAL_KEYWORD  // "=" from custom config
                     }
                 } else {
-                    HetuTokenTypes.ASSIGNMENT_OPERATOR
+                    HetuTokenTypes.OPERATOR_SPECIAL_KEYWORD  // "=" from custom config
                 }
             }
             '!' -> {
@@ -266,21 +332,21 @@ class HetuScriptLexer : Lexer() {
                     when (buffer[tokenEnd]) {
                         '=' -> {
                             tokenEnd++  // consume the =
-                            HetuTokenTypes.RELATIONAL_OPERATOR
+                            HetuTokenTypes.OPERATOR_SPECIAL_KEYWORD  // ">=" as operator from custom config
                         }
                         '>' -> {
                             tokenEnd++  // consume the second >
                             if (tokenEnd < endOffset && buffer[tokenEnd] == '>') {
                                 tokenEnd++  // consume the third >
-                                HetuTokenTypes.SHIFT_OPERATOR  // unsigned right shift >>>
+                                HetuTokenTypes.OPERATOR_SPECIAL_KEYWORD  // ">>>" as operator from custom config
                             } else {
-                                HetuTokenTypes.SHIFT_OPERATOR  // right shift >>
+                                HetuTokenTypes.OPERATOR_SPECIAL_KEYWORD  // ">>" as operator from custom config
                             }
                         }
-                        else -> HetuTokenTypes.RELATIONAL_OPERATOR
+                        else -> HetuTokenTypes.OPERATOR_SPECIAL_KEYWORD  // ">" from custom config
                     }
                 } else {
-                    HetuTokenTypes.RELATIONAL_OPERATOR
+                    HetuTokenTypes.OPERATOR_SPECIAL_KEYWORD  // ">" from custom config
                 }
             }
             '<' -> {
@@ -288,42 +354,42 @@ class HetuScriptLexer : Lexer() {
                     when (buffer[tokenEnd]) {
                         '=' -> {
                             tokenEnd++  // consume the =
-                            HetuTokenTypes.RELATIONAL_OPERATOR
+                            HetuTokenTypes.OPERATOR_SPECIAL_KEYWORD  // "<=" as operator from custom config
                         }
                         '<' -> {
                             tokenEnd++  // consume the second <
-                            HetuTokenTypes.SHIFT_OPERATOR  // left shift <<
+                            HetuTokenTypes.OPERATOR_SPECIAL_KEYWORD  // "<<" as operator from custom config
                         }
-                        else -> HetuTokenTypes.RELATIONAL_OPERATOR
+                        else -> HetuTokenTypes.OPERATOR_SPECIAL_KEYWORD  // "<" from custom config
                     }
                 } else {
-                    HetuTokenTypes.RELATIONAL_OPERATOR
+                    HetuTokenTypes.OPERATOR_SPECIAL_KEYWORD  // "<" from custom config
                 }
             }
             '&' -> {
                 if (tokenEnd < endOffset && buffer[tokenEnd] == '&') {
                     tokenEnd++  // consume the second &
-                    HetuTokenTypes.LOGICAL_OPERATOR  // &&
+                    HetuTokenTypes.OPERATOR_SPECIAL_KEYWORD  // "&&" as operator from custom config
                 } else {
-                    HetuTokenTypes.BITWISE_OPERATOR  // &
+                    HetuTokenTypes.OPERATOR_SPECIAL_KEYWORD  // "&" as operator from custom config
                 }
             }
             '|' -> {
                 if (tokenEnd < endOffset && buffer[tokenEnd] == '|') {
                     tokenEnd++  // consume the second |
-                    HetuTokenTypes.LOGICAL_OPERATOR  // ||
+                    HetuTokenTypes.OPERATOR_SPECIAL_KEYWORD  // "||" as operator from custom config
                 } else {
-                    HetuTokenTypes.BITWISE_OPERATOR  // |
+                    HetuTokenTypes.OPERATOR_SPECIAL_KEYWORD  // "|" as operator from custom config
                 }
             }
-            '^' -> HetuTokenTypes.BITWISE_OPERATOR
-            '~' -> HetuTokenTypes.BITWISE_OPERATOR
+            '^' -> HetuTokenTypes.OPERATOR_SPECIAL_KEYWORD  // "^" as operator from custom config
+            '~' -> HetuTokenTypes.OPERATOR_SPECIAL_KEYWORD  // "~" as operator from custom config
             '?' -> {
                 if (tokenEnd < endOffset) {
                     when (buffer[tokenEnd]) {
                         '?' -> {
                             tokenEnd++  // consume the second ?
-                            HetuTokenTypes.LOGICAL_OPERATOR  // ??
+                            HetuTokenTypes.NULL_COALESCING_OPERATOR  // ??
                         }
                         else -> HetuTokenTypes.TERNARY_OPERATOR  // ? in ternary
                     }
@@ -331,6 +397,7 @@ class HetuScriptLexer : Lexer() {
                     HetuTokenTypes.TERNARY_OPERATOR
                 }
             }
+            // Handle escape sequences in strings - this will be relevant if we handle them properly
             else -> HetuTokenTypes.OPERATION_SIGN
         }
     }
