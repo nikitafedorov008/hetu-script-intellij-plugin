@@ -39,54 +39,47 @@ class HetuAnalyzeAction : AnAction() {
                         return
                     }
                     
-                    // Analyze each file and collect results
-                    val results = mutableListOf<String>()
+                    // Analyze each file and collect structured results
+                    val results = mutableListOf<com.hetu.hetuscript.toolwindow.AnalysisResult>()
                     val totalFiles = htFiles.size
-                    
+
                     htFiles.forEachIndexed { index, file ->
                         indicator.text = "Analyzing file ${index + 1}/${totalFiles}: ${file.name}"
                         indicator.fraction = 0.2 + (0.7 * index.toDouble() / totalFiles)
-                        
+
                         try {
-                            // Always add the file to results, even if there are no issues
                             val output = HetuCliRunner.analyze(project, file)
-                            val result = StringBuilder("File: ${file.path}\n")
-                            
-                            if (output.exitCode != 0) {
-                                result.append("Exit Code: ${output.exitCode}\n")
+                            val combined = StringBuilder()
+                            if (output.exitCode != 0) combined.append("Exit Code: ${output.exitCode}\n")
+                            if (output.stdout.isNotEmpty()) combined.append(output.stdout.trim()).append('\n')
+                            if (output.stderr.isNotEmpty()) combined.append("Error:\n").append(output.stderr.trim()).append('\n')
+
+                            val message = combined.toString().trim()
+
+                            val status = when {
+                                output.exitCode != 0 || message.contains("error", ignoreCase = true) || message.contains("LateInitializationError") -> com.hetu.hetuscript.toolwindow.AnalysisStatus.ERROR
+                                message.isBlank() || message.contains("no issues", ignoreCase = true) || message.contains("found 0 problem") -> com.hetu.hetuscript.toolwindow.AnalysisStatus.SUCCESS
+                                message.contains("problem", ignoreCase = true) || message.contains("warning", ignoreCase = true) -> com.hetu.hetuscript.toolwindow.AnalysisStatus.WARNING
+                                else -> com.hetu.hetuscript.toolwindow.AnalysisStatus.UNKNOWN
                             }
-                            
-                            if (output.stdout.isNotEmpty()) {
-                                result.append("Output:\n${output.stdout}\n")
-                            }
-                            
-                            if (output.stderr.isNotEmpty()) {
-                                result.append("Error:\n${output.stderr}\n")
-                            }
-                            
-                            if (result.length > ("File: ${file.path}\n").length) {
-                                results.add(result.toString())
-                            } else {
-                                // Even if there's no output, indicate the file was analyzed
-                                results.add("File: ${file.path}\nStatus: Analyzed (no output)\n")
-                            }
+
+                            results.add(com.hetu.hetuscript.toolwindow.AnalysisResult(file.path, status, if (message.isBlank()) "No issues found" else message))
                         } catch (ex: Exception) {
-                            results.add("File: ${file.path}\nError: ${ex.message}\n")
+                            results.add(com.hetu.hetuscript.toolwindow.AnalysisResult(file.path, com.hetu.hetuscript.toolwindow.AnalysisStatus.ERROR, "${ex.message}"))
                         }
                     }
-                    
+
                     indicator.fraction = 0.9
-                    
-                    // Show results in a separate window
+
+                    // Show results in a separate window (only problematic entries will be shown in the toolwindow)
                     ApplicationManager.getApplication().invokeLater {
-                        val resultsText = if (results.isEmpty()) {
-                            "Analysis completed. No .ht files found in project."
-                        } else {
-                            "Analysis Results (${results.size} file(s) analyzed):\n\n${results.joinToString("\n---\n")}"
-                        }
-                        
                         // Show the results in the tool window via service
-                        showResultsInToolWindow(project, resultsText)
+                        val service = project.service<com.hetu.hetuscript.service.HetuAnalyzerService>()
+                        service.updateResults(results)
+
+                        // Make sure tool window is visible
+                        val toolWindowManager = com.intellij.openapi.wm.ToolWindowManager.getInstance(project)
+                        toolWindowManager.getToolWindow("Hetu Analyzer")?.show { }
                     }
                 } catch (ex: Exception) {
                     ApplicationManager.getApplication().invokeLater {
@@ -136,21 +129,38 @@ class HetuAnalyzeAction : AnAction() {
         val result = mutableListOf<VirtualFile>()
         
         fun collectRecursively(current: VirtualFile) {
+            // do not descend into build directories
+            if (current.isDirectory && current.name == "build") return
+
             if (current.isDirectory) {
                 current.children.forEach { child ->
                     if (!child.isDirectory) {
                         if (child.extension == "ht") {
-                            result.add(child)
+                            // skip files inside any build/ ancestor
+                            var p = child.parent
+                            var inBuild = false
+                            while (p != null) {
+                                if (p.name == "build") { inBuild = true; break }
+                                p = p.parent
+                            }
+                            if (!inBuild) result.add(child)
                         }
                     } else {
-                        // Skip hidden directories like .git
-                        if (!child.name.startsWith(".")) {
+                        // Skip hidden directories like .git and any build directories
+                        if (!child.name.startsWith(".") && child.name != "build") {
                             collectRecursively(child)
                         }
                     }
                 }
             } else if (current.extension == "ht") {
-                result.add(current)
+                // ensure file is not inside a build/ tree
+                var p = current.parent
+                var inBuild = false
+                while (p != null) {
+                    if (p.name == "build") { inBuild = true; break }
+                    p = p.parent
+                }
+                if (!inBuild) result.add(current)
             }
         }
         
@@ -163,20 +173,21 @@ class HetuAnalyzeAction : AnAction() {
         e.presentation.isEnabledAndVisible = project != null
     }
     
-    private fun showResultsInToolWindow(project: Project, resultsText: String) {
+    private fun showResultsInToolWindow(project: Project, results: List<com.hetu.hetuscript.toolwindow.AnalysisResult>) {
         val toolWindowManager = com.intellij.openapi.wm.ToolWindowManager.getInstance(project)
         val toolWindow = toolWindowManager.getToolWindow("Hetu Analyzer")
-        
+
         if (toolWindow != null) {
             // Update the results via the service
             val service = project.service<com.hetu.hetuscript.service.HetuAnalyzerService>()
-            service.updateResults(resultsText)
-            
+            service.updateResults(results)
+
             // Show the tool window
             toolWindow.show { }
         } else {
-            // Fallback to dialog if tool window is not available
-            val analyzeResultsDialog = HetuAnalyzeResultsDialog(project, resultsText, emptyList())
+            // Fallback to dialog if tool window is not available — show textual summary
+            val resultsText = if (results.isEmpty()) "No problems found" else results.joinToString("\n\n") { "File: ${it.filePath}\n${it.message}" }
+            val analyzeResultsDialog = HetuAnalyzeResultsDialog(project, resultsText, results.map { it.filePath })
             analyzeResultsDialog.show()
         }
     }

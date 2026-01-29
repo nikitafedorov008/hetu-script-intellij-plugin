@@ -11,6 +11,16 @@ object HetuTokenTypes {
     @JvmField
     val FUNCTION_NAME = HetuTokenType("FUNCTION_NAME")
     @JvmField
+    val CLASS_MEMBER_VARIABLE = HetuTokenType("CLASS_MEMBER_VARIABLE")
+    @JvmField
+    val CLASS_MEMBER_FUNCTION = HetuTokenType("CLASS_MEMBER_FUNCTION")
+    @JvmField
+    val LOCAL_VARIABLE = HetuTokenType("LOCAL_VARIABLE")
+    @JvmField
+    val GLOBAL_VARIABLE = HetuTokenType("GLOBAL_VARIABLE")
+    @JvmField
+    val LOCAL_FUNCTION = HetuTokenType("LOCAL_FUNCTION")
+    @JvmField
     val NUMBER = HetuTokenType("NUMBER")
     @JvmField
     val STRING = HetuTokenType("STRING")
@@ -43,6 +53,12 @@ object HetuTokenTypes {
     val STRING_SINGLE = HetuTokenType("STRING_SINGLE")
     @JvmField
     val ESCAPE_SEQUENCE = HetuTokenType("ESCAPE_SEQUENCE")
+    @JvmField
+    val STRING_INTERPOLATION = HetuTokenType("STRING_INTERPOLATION")  // For ${...} parts in template strings
+    @JvmField
+    val STRING_TEMPLATE_PART = HetuTokenType("STRING_TEMPLATE_PART")  // For template string parts outside of ${...}
+    @JvmField
+    val FUNCTION_STRING_ARGUMENT = HetuTokenType("FUNCTION_STRING_ARGUMENT")  // For strings used as arguments in specific functions
     
     // Keyword categories for control flow and declaration constructs
     @JvmField

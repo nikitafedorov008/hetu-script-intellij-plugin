@@ -19,4 +19,6 @@ class HetuCompileConfigurationFactory(type: ConfigurationType) : ConfigurationFa
     }
 
     override fun getName(): String = "Hetu Compile"
+
+    override fun getId(): String = HetuCompileConfiguration.ID
 }

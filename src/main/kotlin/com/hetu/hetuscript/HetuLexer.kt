@@ -88,7 +88,26 @@ class HetuScriptLexer : Lexer() {
                 // Check for string interpolation
                 if (tokenEnd + 1 < endOffset && buffer[tokenEnd] == '$' && buffer[tokenEnd + 1] == '{') {
                     hasInterpolation = true
-                    tokenEnd++
+                    tokenEnd++  // Consume '$'
+                    tokenEnd++  // Consume '{'
+                    // Skip until matching '}' (simple approach for lexer)
+                    var braceCount = 1
+                    var pos = tokenEnd
+                    while (pos < endOffset && braceCount > 0) {
+                        if (buffer[pos] == '{') {
+                            braceCount++
+                        } else if (buffer[pos] == '}') {
+                            braceCount--
+                        }
+                        if (braceCount > 0) {
+                            pos++
+                        }
+                    }
+                    if (braceCount == 0 && pos < endOffset) {
+                        pos++  // Include the closing '}'
+                    }
+                    tokenEnd = pos
+                    continue
                 }
                 tokenEnd++
             }
@@ -113,7 +132,26 @@ class HetuScriptLexer : Lexer() {
                 // Check for string interpolation
                 if (tokenEnd + 1 < endOffset && buffer[tokenEnd] == '$' && buffer[tokenEnd + 1] == '{') {
                     hasInterpolation = true
-                    tokenEnd++
+                    tokenEnd++  // Consume '$'
+                    tokenEnd++  // Consume '{'
+                    // Skip until matching '}' (simple approach for lexer)
+                    var braceCount = 1
+                    var pos = tokenEnd
+                    while (pos < endOffset && braceCount > 0) {
+                        if (buffer[pos] == '{') {
+                            braceCount++
+                        } else if (buffer[pos] == '}') {
+                            braceCount--
+                        }
+                        if (braceCount > 0) {
+                            pos++
+                        }
+                    }
+                    if (braceCount == 0 && pos < endOffset) {
+                        pos++  // Include the closing '}'
+                    }
+                    tokenEnd = pos
+                    continue
                 }
                 tokenEnd++
             }

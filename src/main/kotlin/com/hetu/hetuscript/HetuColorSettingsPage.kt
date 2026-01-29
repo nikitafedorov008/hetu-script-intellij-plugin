@@ -202,6 +202,11 @@ class Car extends Animal implements Movable {  // DECLARATION: class, extends
             AttributesDescriptor("Null Literal", HetuSyntaxHighlighter.NULL_LITERAL_KEY),
             AttributesDescriptor("This/Super Literal", HetuSyntaxHighlighter.THIS_SUPER_LITERAL_KEY),
             
+            // Distinct identifier types
+            AttributesDescriptor("Variable Name", HetuSyntaxHighlighter.VARIABLE_NAME_KEY),
+            AttributesDescriptor("Class Name", HetuSyntaxHighlighter.CLASS_NAME_KEY),
+            AttributesDescriptor("Function Name", HetuSyntaxHighlighter.FUNCTION_NAME_KEY),
+            
             // More specific access level types
             AttributesDescriptor("Public Access", HetuSyntaxHighlighter.PUBLIC_ACCESS_KEY),
             AttributesDescriptor("Private Access", HetuSyntaxHighlighter.PRIVATE_ACCESS_KEY),

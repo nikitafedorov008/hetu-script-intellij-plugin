@@ -14,6 +14,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
+import com.hetu.hetuscript.run.OutputPathResolver
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.EmptyProgressIndicator
@@ -37,30 +38,81 @@ class HetuCompileAction : AnAction() {
 
         // Create a temporary compile configuration for the selected file
         val sourcePath = virtualFile.path
-        val outputPath = getDefaultOutputPath(project, sourcePath)
-        
+        val outputPath = getDefaultOutputPath(project, virtualFile)
+
         try {
             // Run the hetu compile command on the selected file
             val output = HetuCliRunner.compile(project, virtualFile, outputPath)
-            
-            // Show the output in a message
-            val resultText = if (output.exitCode == 0) {
-                "Compilation successful!\n${output.stdout}"
+
+            // If compilation succeeded, present a compact summary: saved path, total time, files involved
+            if (output.exitCode == 0) {
+                val stdout = try { output.getStdout() } catch (_: Throwable) { output.stdout }
+
+                // extract saved path (e.g. saved file to [/path/to/out])
+                val savedPath = Regex("saved file to \\[([^]]+)\\]", RegexOption.IGNORE_CASE).find(stdout)?.groupValues?.get(1)
+
+                // if the saved file is inside the project, display it as "<projectName>/<relative/path>"
+                val displaySavedPath: String? = if (savedPath != null && project.basePath != null && savedPath.startsWith(project.basePath!!)) {
+                    val rel = savedPath.removePrefix(project.basePath!!.trimEnd('/') + "/").trimStart('/')
+                    "${project.name}/$rel"
+                } else savedPath
+
+                // collect timings like "hetu: 28ms to parse [/path/file.ht]" — robust capture of ms + .ht path
+                val timingRegex = Regex("(\\d+)ms[^\\[]*\\[([^]]+?\\.ht)\\]")
+                val perFileTimes = mutableMapOf<String, Long>()
+                for (m in timingRegex.findAll(stdout)) {
+                    val ms = m.groupValues[1].toLongOrNull() ?: 0L
+                    val file = m.groupValues[2]
+                    perFileTimes[file] = (perFileTimes[file] ?: 0L) + ms
+                }
+
+                val genericMsRegex = Regex("(\\d+)ms")
+
+                // fallback: if no detailed timing lines, sum all ms occurrences
+                val totalMs = if (perFileTimes.isNotEmpty()) {
+                    perFileTimes.values.sum()
+                } else {
+                    genericMsRegex.findAll(stdout).map { it.groupValues[1].toLong() }.sum()
+                }
+
+                // collect list of files mentioned in brackets (e.g. [..file.ht]) and include timed files
+                val bracketFileRegex = Regex("\\[([^]]+?\\.ht)\\]")
+                val files = mutableSetOf<String>()
+                for (m in bracketFileRegex.findAll(stdout)) files.add(m.groupValues[1])
+                files.addAll(perFileTimes.keys)
+
+                val fileCount = files.size
+
+                val details = if (perFileTimes.isNotEmpty()) {
+                    perFileTimes.entries.sortedByDescending { it.value }
+                        .joinToString("\n") { (f, t) -> "- ${f}: ${t} ms" }
+                } else {
+                    "(detailed per-file timings not available)"
+                }
+
+                val summary = buildString {
+                    append("Compilation successful!\n")
+                    if (displaySavedPath != null) append("Saved: $displaySavedPath\n")
+                    append("Files involved: $fileCount\n")
+                    append("Total time: ${totalMs} ms\n\n")
+                    append("Details:\n")
+                    append(details)
+                    append("\n\nFull output:\n${stdout}")
+                }
+
+                Messages.showInfoMessage(project, summary, "Hetu Compile Result")
             } else {
-                "Compilation failed!\nstdout: ${output.stdout}\nstderr: ${output.stderr}"
+                val resultText = "Compilation failed!\nstdout: ${output.stdout}\nstderr: ${output.stderr}"
+                Messages.showErrorDialog(project, resultText, "Hetu Compile Result")
             }
-            
-            Messages.showInfoMessage(project, resultText, "Hetu Compile Result")
         } catch (ex: Exception) {
             Messages.showErrorDialog(project, "Error during compilation: ${ex.message}", "Compilation Error")
         }
     }
 
-    private fun getDefaultOutputPath(project: Project, sourcePath: String): String {
-        // Use project base path for the build directory
-        val projectBasePath = project.basePath ?: System.getProperty("user.dir")
-        val buildDir = java.io.File(projectBasePath, "build/hetu")
-        buildDir.mkdirs() // Create directory if it doesn't exist
-        return java.io.File(buildDir, "output.out").absolutePath
+    private fun getDefaultOutputPath(project: Project, sourceFile: VirtualFile): String {
+        val path = OutputPathResolver.resolveOutputPath(project, sourceFile, null)
+        java.io.File(path).parentFile?.mkdirs()
+        return path
     }
 }

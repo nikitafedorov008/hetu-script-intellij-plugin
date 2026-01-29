@@ -83,6 +83,15 @@ class HetuCompileConfigurationEditor : SettingsEditor<HetuCompileConfiguration>(
         gbc.weightx = 1.0
         mainPanel.add(outputField, gbc)
 
+        // helper hint: when a pubspec.yaml with `version` exists in the project of the .ht file,
+        // the output file will be named `<scriptName>-<version>.out` (otherwise legacy behaviour)
+        gbc.gridx = 1
+        gbc.gridy = 2
+        gbc.weightx = 1.0
+        val hint = JBLabel("If a pubspec.yaml with 'version' exists, output will be '<name>-<version>.out'")
+        hint.font = hint.font.deriveFont((hint.font.style))
+        mainPanel.add(hint, gbc)
+
         gbc.gridx = 0
         gbc.gridy = 2
         gbc.weightx = 0.0

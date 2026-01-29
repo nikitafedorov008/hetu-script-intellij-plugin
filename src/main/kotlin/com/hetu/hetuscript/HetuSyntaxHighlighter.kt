@@ -4,8 +4,10 @@ import com.intellij.lexer.Lexer
 import com.intellij.openapi.editor.DefaultLanguageHighlighterColors
 import com.intellij.openapi.editor.HighlighterColors
 import com.intellij.openapi.editor.colors.TextAttributesKey
+import com.intellij.openapi.editor.markup.TextAttributes
 import com.intellij.openapi.fileTypes.SyntaxHighlighterBase
 import com.intellij.psi.tree.IElementType
+import java.awt.Color
 
 class HetuSyntaxHighlighter : SyntaxHighlighterBase() {
     override fun getHighlightingLexer(): Lexer {
@@ -19,6 +21,11 @@ class HetuSyntaxHighlighter : SyntaxHighlighterBase() {
             HetuTokenTypes.VARIABLE_NAME -> VARIABLE_NAME_KEYS
             HetuTokenTypes.CLASS_NAME -> CLASS_NAME_KEYS
             HetuTokenTypes.FUNCTION_NAME -> FUNCTION_NAME_KEYS
+            HetuTokenTypes.CLASS_MEMBER_VARIABLE -> CLASS_MEMBER_VARIABLE_KEYS
+            HetuTokenTypes.CLASS_MEMBER_FUNCTION -> CLASS_MEMBER_FUNCTION_KEYS
+            HetuTokenTypes.LOCAL_VARIABLE -> LOCAL_VARIABLE_KEYS
+            HetuTokenTypes.GLOBAL_VARIABLE -> GLOBAL_VARIABLE_KEYS
+            HetuTokenTypes.LOCAL_FUNCTION -> LOCAL_FUNCTION_KEYS
             HetuTokenTypes.NUMBER -> NUMBER_KEYS
             HetuTokenTypes.STRING_DOUBLE, HetuTokenTypes.STRING_SINGLE -> STRING_KEYS
             HetuTokenTypes.COMMENT -> COMMENT_KEYS
@@ -33,6 +40,11 @@ class HetuSyntaxHighlighter : SyntaxHighlighterBase() {
             HetuTokenTypes.REGULAR_STRING -> REGULAR_STRING_KEYS
             HetuTokenTypes.TEMPLATE_STRING -> TEMPLATE_STRING_KEYS
             HetuTokenTypes.ESCAPED_STRING -> ESCAPED_STRING_KEYS
+            
+            // String interpolation
+            HetuTokenTypes.STRING_INTERPOLATION -> STRING_INTERPOLATION_KEYS
+            HetuTokenTypes.STRING_TEMPLATE_PART -> STRING_TEMPLATE_PART_KEYS
+            HetuTokenTypes.FUNCTION_STRING_ARGUMENT -> FUNCTION_STRING_ARGUMENT_KEYS
             
             // VS Code-style specific tokens
             HetuTokenTypes.LINE_COMMENT -> LINE_COMMENT_KEYS
@@ -199,17 +211,48 @@ class HetuSyntaxHighlighter : SyntaxHighlighterBase() {
         
         val VARIABLE_NAME_KEY = TextAttributesKey.createTextAttributesKey(
             "HETU_VARIABLE_NAME",
-            DefaultLanguageHighlighterColors.LOCAL_VARIABLE
+            TextAttributes().apply {
+                foregroundColor = Color(0x0096FF) // Bright blue for variables
+            }
         )
         
         val CLASS_NAME_KEY = TextAttributesKey.createTextAttributesKey(
             "HETU_CLASS_NAME",
-            DefaultLanguageHighlighterColors.CLASS_NAME
+            TextAttributes().apply {
+                foregroundColor = Color(0xFF4136) // Bright red for class names
+            }
         )
         
         val FUNCTION_NAME_KEY = TextAttributesKey.createTextAttributesKey(
             "HETU_FUNCTION_NAME",
-            DefaultLanguageHighlighterColors.FUNCTION_DECLARATION
+            TextAttributes().apply {
+                foregroundColor = Color(0x8A2BE2) // Rich purple for function names
+            }
+        )
+        
+        val CLASS_MEMBER_VARIABLE_KEY = TextAttributesKey.createTextAttributesKey(
+            "HETU_CLASS_MEMBER_VARIABLE",
+            DefaultLanguageHighlighterColors.INSTANCE_FIELD
+        )
+        
+        val CLASS_MEMBER_FUNCTION_KEY = TextAttributesKey.createTextAttributesKey(
+            "HETU_CLASS_MEMBER_FUNCTION",
+            DefaultLanguageHighlighterColors.INSTANCE_METHOD
+        )
+        
+        val LOCAL_VARIABLE_KEY = TextAttributesKey.createTextAttributesKey(
+            "HETU_LOCAL_VARIABLE",
+            DefaultLanguageHighlighterColors.LOCAL_VARIABLE
+        )
+        
+        val GLOBAL_VARIABLE_KEY = TextAttributesKey.createTextAttributesKey(
+            "HETU_GLOBAL_VARIABLE",
+            DefaultLanguageHighlighterColors.GLOBAL_VARIABLE
+        )
+        
+        val LOCAL_FUNCTION_KEY = TextAttributesKey.createTextAttributesKey(
+            "HETU_LOCAL_FUNCTION",
+            DefaultLanguageHighlighterColors.STATIC_METHOD
         )
         
         val NUMBER_KEY = TextAttributesKey.createTextAttributesKey(
@@ -256,6 +299,21 @@ class HetuSyntaxHighlighter : SyntaxHighlighterBase() {
         val ESCAPE_SEQUENCE_KEY = TextAttributesKey.createTextAttributesKey(
             "HETU_ESCAPE_SEQUENCE",
             DefaultLanguageHighlighterColors.VALID_STRING_ESCAPE
+        )
+        
+        val STRING_INTERPOLATION_KEY = TextAttributesKey.createTextAttributesKey(
+            "HETU_STRING_INTERPOLATION",
+            DefaultLanguageHighlighterColors.METADATA  // Different color for interpolated expressions
+        )
+        
+        val STRING_TEMPLATE_PART_KEY = TextAttributesKey.createTextAttributesKey(
+            "HETU_STRING_TEMPLATE_PART",
+            DefaultLanguageHighlighterColors.STRING
+        )
+        
+        val FUNCTION_STRING_ARGUMENT_KEY = TextAttributesKey.createTextAttributesKey(
+            "HETU_FUNCTION_STRING_ARGUMENT",
+            DefaultLanguageHighlighterColors.STRING  // May be colored differently for function arguments
         )
         
         // More specific number types with distinct colors
@@ -815,6 +873,9 @@ class HetuSyntaxHighlighter : SyntaxHighlighterBase() {
         private val STRING_DOUBLE_KEYS = arrayOf(STRING_DOUBLE_KEY)
         private val STRING_SINGLE_KEYS = arrayOf(STRING_SINGLE_KEY)
         private val ESCAPE_SEQUENCE_KEYS = arrayOf(ESCAPE_SEQUENCE_KEY)
+        private val STRING_INTERPOLATION_KEYS = arrayOf(STRING_INTERPOLATION_KEY)
+        private val STRING_TEMPLATE_PART_KEYS = arrayOf(STRING_TEMPLATE_PART_KEY)
+        private val FUNCTION_STRING_ARGUMENT_KEYS = arrayOf(FUNCTION_STRING_ARGUMENT_KEY)
         
         // More specific comment types
         private val SINGLE_LINE_COMMENT_KEYS = arrayOf(SINGLE_LINE_COMMENT_KEY)
@@ -953,6 +1014,13 @@ class HetuSyntaxHighlighter : SyntaxHighlighterBase() {
         private val EXTENDS_KEYWORD_KEYS = arrayOf(EXTENDS_KEYWORD_KEY)
         private val AWAIT_KEYWORD_KEYS = arrayOf(AWAIT_KEYWORD_KEY)
         private val YIELD_KEYWORD_KEYS = arrayOf(YIELD_KEYWORD_KEY)
+        
+        // Context-specific identifier key arrays
+        private val CLASS_MEMBER_VARIABLE_KEYS = arrayOf(CLASS_MEMBER_VARIABLE_KEY)
+        private val CLASS_MEMBER_FUNCTION_KEYS = arrayOf(CLASS_MEMBER_FUNCTION_KEY)
+        private val LOCAL_VARIABLE_KEYS = arrayOf(LOCAL_VARIABLE_KEY)
+        private val GLOBAL_VARIABLE_KEYS = arrayOf(GLOBAL_VARIABLE_KEY)
+        private val LOCAL_FUNCTION_KEYS = arrayOf(LOCAL_FUNCTION_KEY)
         
         private val BAD_CHARACTER_KEYS = arrayOf(BAD_CHARACTER_KEY)
         private val EMPTY_KEYS = arrayOf<TextAttributesKey>()

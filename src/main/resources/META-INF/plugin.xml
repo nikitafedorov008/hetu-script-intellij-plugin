@@ -45,18 +45,29 @@
             <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
         </action>
         
+        <group id="HetuMainMenu" text="Hetu" popup="false"/>
+
+        <group id="HetuBuildGroup" text="Hetu" popup="true">
+            <add-to-group group-id="BuildMenu" anchor="last"/>
+        </group>
+
         <action id="HetuCompileAction" 
                 class="com.hetu.hetuscript.action.HetuCompileAction" 
-                text="Hetu Compile" 
+                text="Compile" 
                 description="Compile Hetu script file using CLI">
-            <add-to-group group-id="BuildMenu" anchor="last"/>
-        </action>
+            <add-to-group group-id="HetuMainMenu" anchor="first"/>
+            <add-to-group group-id="HetuBuildGroup" anchor="first"/>
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+        </action> 
         
         <action id="HetuAnalyzeAction" 
                 class="com.hetu.hetuscript.action.HetuAnalyzeAction" 
-                text="Hetu Analyze" 
+                text="Analyze" 
                 description="Analyze all Hetu script files in the project">
+            <add-to-group group-id="HetuMainMenu" anchor="last"/>
+            <add-to-group group-id="HetuBuildGroup" anchor="last"/>
             <add-to-group group-id="ToolsMenu" anchor="last"/>
-        </action>
+        </action> 
     </actions>
 </idea-plugin>
